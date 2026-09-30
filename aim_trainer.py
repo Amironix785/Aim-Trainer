@@ -2,7 +2,6 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 
-
 import random
 import math
 import json
@@ -22,6 +21,12 @@ SOUND_FOLDER = "aim_sounds"
 WIDTH = 1536
 HEIGHT = 864
 
+# Mouse Sensitivity
+MOUSE_SENSITIVITY = 40
+MIN_SENSITIVITY = 5
+MAX_SENSITIVITY = 80
+SENSITIVITY_STEP = 5
+
 
 # =========================================================
 # APP
@@ -34,9 +39,6 @@ window.borderless = False
 window.fullscreen = False
 window.fps_counter.enabled = False
 window.exit_button.visible = False
-
-# Shader
-
 
 
 # =========================================================
@@ -121,21 +123,43 @@ def load_leaderboard():
         return
 
     try:
-        with open(LEADERBOARD_FILE, "r", encoding="utf-8") as file:
+
+        with open(
+            LEADERBOARD_FILE,
+            "r",
+            encoding="utf-8"
+        ) as file:
+
             leaderboard = json.load(file)
 
     except:
+
         leaderboard = []
 
 
 def save_leaderboard():
 
     try:
-        with open(LEADERBOARD_FILE, "w", encoding="utf-8") as file:
-            json.dump(leaderboard, file, indent=4, ensure_ascii=False)
+
+        with open(
+            LEADERBOARD_FILE,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            json.dump(
+                leaderboard,
+                file,
+                indent=4,
+                ensure_ascii=False
+            )
 
     except Exception as e:
-        print("Leaderboard save error:", e)
+
+        print(
+            "Leaderboard save error:",
+            e
+        )
 
 
 def add_score():
@@ -151,7 +175,10 @@ def add_score():
     })
 
     leaderboard.sort(
-        key=lambda x: x.get("score", 0),
+        key=lambda x: x.get(
+            "score",
+            0
+        ),
         reverse=True
     )
 
@@ -167,26 +194,46 @@ def get_accuracy():
     if total == 0:
         return 0
 
-    return round((hits / total) * 100, 1)
+    return round(
+        (hits / total) * 100,
+        1
+    )
 
 
 # =========================================================
 # SOUND
 # =========================================================
 
-def make_sound(filename, frequency, duration, volume=0.2):
+def make_sound(
+    filename,
+    frequency,
+    duration,
+    volume=0.2
+):
 
-    os.makedirs(SOUND_FOLDER, exist_ok=True)
+    os.makedirs(
+        SOUND_FOLDER,
+        exist_ok=True
+    )
 
-    path = os.path.join(SOUND_FOLDER, filename)
+    path = os.path.join(
+        SOUND_FOLDER,
+        filename
+    )
 
     if os.path.exists(path):
         return path
 
     sample_rate = 44100
-    samples = int(sample_rate * duration)
 
-    with wave.open(path, "w") as wav:
+    samples = int(
+        sample_rate * duration
+    )
+
+    with wave.open(
+        path,
+        "w"
+    ) as wav:
 
         wav.setnchannels(1)
         wav.setsampwidth(2)
@@ -201,10 +248,18 @@ def make_sound(filename, frequency, duration, volume=0.2):
             value = int(
                 32767
                 * volume
-                * math.sin(2 * math.pi * frequency * t)
+                * math.sin(
+                    2
+                    * math.pi
+                    * frequency
+                    * t
+                )
             )
 
-            data += struct.pack("<h", value)
+            data += struct.pack(
+                "<h",
+                value
+            )
 
         wav.writeframes(data)
 
@@ -250,12 +305,15 @@ gameover_sound = make_sound(
 def play_sound(path):
 
     try:
+
         Audio(
             path,
             autoplay=True,
             volume=0.5
         )
+
     except:
+
         pass
 
 
@@ -266,37 +324,58 @@ def play_sound(path):
 world = Entity()
 
 
-# Floor
+# =========================================================
+# FLOOR
+# =========================================================
+
 floor = Entity(
     parent=world,
     model="plane",
     scale=80,
     texture="white_cube",
     texture_scale=(80, 80),
-    color=color.rgb(20, 23, 30),
+    color=color.rgb(
+        20,
+        23,
+        30
+    ),
     collider="box"
 )
 
 
-# Ceiling
+# =========================================================
+# CEILING
+# =========================================================
+
 ceiling = Entity(
     parent=world,
     model="plane",
     scale=80,
     rotation_x=180,
     y=15,
-    color=color.rgb(15, 17, 23)
+    color=color.rgb(
+        15,
+        17,
+        23
+    )
 )
 
 
-# Walls
+# =========================================================
+# WALLS
+# =========================================================
+
 wall_left = Entity(
     parent=world,
     model="cube",
     scale=(1, 15, 80),
     x=-40,
     y=7.5,
-    color=color.rgb(30, 34, 45),
+    color=color.rgb(
+        30,
+        34,
+        45
+    ),
     collider="box"
 )
 
@@ -306,7 +385,11 @@ wall_right = Entity(
     scale=(1, 15, 80),
     x=40,
     y=7.5,
-    color=color.rgb(30, 34, 45),
+    color=color.rgb(
+        30,
+        34,
+        45
+    ),
     collider="box"
 )
 
@@ -316,7 +399,11 @@ wall_back = Entity(
     scale=(80, 15, 1),
     z=40,
     y=7.5,
-    color=color.rgb(30, 34, 45),
+    color=color.rgb(
+        30,
+        34,
+        45
+    ),
     collider="box"
 )
 
@@ -326,7 +413,11 @@ wall_front = Entity(
     scale=(80, 15, 1),
     z=-40,
     y=7.5,
-    color=color.rgb(30, 34, 45),
+    color=color.rgb(
+        30,
+        34,
+        45
+    ),
     collider="box"
 )
 
@@ -335,39 +426,89 @@ wall_front = Entity(
 # DECORATION
 # =========================================================
 
-for x in range(-35, 36, 10):
+for x in range(
+    -35,
+    36,
+    10
+):
 
     Entity(
         parent=world,
         model="cube",
-        scale=(0.25, 10, 0.25),
-        position=(x, 5, 35),
+        scale=(
+            0.25,
+            10,
+            0.25
+        ),
+        position=(
+            x,
+            5,
+            35
+        ),
         color=color.azure
     )
 
 
-for z in range(-30, 31, 10):
+for z in range(
+    -30,
+    31,
+    10
+):
 
     Entity(
         parent=world,
         model="cube",
-        scale=(0.15, 0.08, 80),
-        position=(0, 0.03, z),
-        color=color.rgb(40, 50, 65)
+        scale=(
+            0.15,
+            0.08,
+            80
+        ),
+        position=(
+            0,
+            0.03,
+            z
+        ),
+        color=color.rgb(
+            40,
+            50,
+            65
+        )
     )
 
 
-# Pillars
-for x in (-32, 32):
+# =========================================================
+# PILLARS
+# =========================================================
 
-    for z in (-25, 0, 25):
+for x in (
+    -32,
+    32
+):
+
+    for z in (
+        -25,
+        0,
+        25
+    ):
 
         Entity(
             parent=world,
             model="cube",
-            scale=(2, 12, 2),
-            position=(x, 6, z),
-            color=color.rgb(35, 40, 52)
+            scale=(
+                2,
+                12,
+                2
+            ),
+            position=(
+                x,
+                6,
+                z
+            ),
+            color=color.rgb(
+                35,
+                40,
+                52
+            )
         )
 
 
@@ -380,23 +521,40 @@ try:
     sun = DirectionalLight(
         parent=world,
         y=20,
-        rotation=(45, -45, 45)
+        rotation=(
+            45,
+            -45,
+            45
+        )
     )
 
-    sun.look_at(Vec3(0, 0, 0))
+    sun.look_at(
+        Vec3(
+            0,
+            0,
+            0
+        )
+    )
 
 except:
 
     sun = None
 
 
-# Sky
+# =========================================================
+# SKY
+# =========================================================
+
 sky = Entity(
     parent=scene,
-    model='sphere',
+    model="sphere",
     scale=200,
     double_sided=True,
-    color=color.rgb(35, 45, 70)
+    color=color.rgb(
+        35,
+        45,
+        70
+    )
 )
 
 
@@ -405,12 +563,22 @@ sky = Entity(
 # =========================================================
 
 player = FirstPersonController(
-    position=(0, 2, -25)
+    position=(
+        0,
+        2,
+        -25
+    )
 )
 
 player.speed = 7
 player.gravity = 0.8
 player.cursor.color = color.white
+
+# Apply mouse sensitivity
+player.mouse_sensitivity = Vec2(
+    MOUSE_SENSITIVITY,
+    MOUSE_SENSITIVITY
+)
 
 
 # =========================================================
@@ -422,6 +590,7 @@ hud = Entity(
     enabled=False
 )
 
+
 score_text = Text(
     parent=hud,
     text="SCORE: 0",
@@ -429,6 +598,7 @@ score_text = Text(
     y=0.45,
     scale=1.4
 )
+
 
 time_text = Text(
     parent=hud,
@@ -438,6 +608,7 @@ time_text = Text(
     scale=1.4
 )
 
+
 combo_text = Text(
     parent=hud,
     text="COMBO: 0",
@@ -445,6 +616,7 @@ combo_text = Text(
     y=0.45,
     scale=1.4
 )
+
 
 accuracy_text = Text(
     parent=hud,
@@ -455,11 +627,17 @@ accuracy_text = Text(
 )
 
 
-# Crosshair
+# =========================================================
+# CROSSHAIR
+# =========================================================
+
 crosshair = Text(
     parent=camera.ui,
     text="+",
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=1.5,
     color=color.white
 )
@@ -473,10 +651,19 @@ menu = Entity(
     parent=camera.ui
 )
 
+
 menu_background = Panel(
     parent=menu,
-    scale=(0.75, 0.85),
-    color=color.rgba(5, 8, 15, 240)
+    scale=(
+        0.75,
+        0.85
+    ),
+    color=color.rgba(
+        5,
+        8,
+        15,
+        240
+    )
 )
 
 
@@ -484,7 +671,10 @@ title = Text(
     parent=menu,
     text="3D AIM CHALLENGE",
     y=0.32,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=2
 )
 
@@ -493,7 +683,10 @@ subtitle = Text(
     parent=menu,
     text="Test your reaction speed",
     y=0.24,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=1
 )
 
@@ -502,7 +695,10 @@ name_label = Text(
     parent=menu,
     text="PLAYER NAME",
     y=0.12,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=1.1
 )
 
@@ -511,8 +707,14 @@ name_input = InputField(
     parent=menu,
     default_value="Player",
     y=0.04,
-    scale=(0.45, 0.07),
-    origin=(0, 0)
+    scale=(
+        0.45,
+        0.07
+    ),
+    origin=(
+        0,
+        0
+    )
 )
 
 
@@ -520,7 +722,10 @@ difficulty_label = Text(
     parent=menu,
     text="DIFFICULTY",
     y=-0.07,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=1.1
 )
 
@@ -538,39 +743,67 @@ difficulty_names = [
     "Extreme"
 ]
 
-difficulty_x = [-0.27, -0.09, 0.09, 0.27]
+difficulty_x = [
+    -0.27,
+    -0.09,
+    0.09,
+    0.27
+]
 
-for name, x in zip(difficulty_names, difficulty_x):
+
+for name, x in zip(
+    difficulty_names,
+    difficulty_x
+):
 
     button = Button(
         parent=menu,
         text=name,
-        position=(x, -0.16),
-        scale=(0.16, 0.07)
+        position=(
+            x,
+            -0.16
+        ),
+        scale=(
+            0.16,
+            0.07
+        )
     )
 
-    difficulty_buttons.append(button)
+    difficulty_buttons.append(
+        button
+    )
 
 
 def update_difficulty_buttons():
 
-    for i, button in enumerate(difficulty_buttons):
+    for i, button in enumerate(
+        difficulty_buttons
+    ):
 
         if difficulty_names[i] == selected_difficulty:
+
             button.color = color.azure
+
         else:
+
             button.color = color.gray
 
 
 update_difficulty_buttons()
 
 
-# Start button
+# =========================================================
+# MAIN MENU BUTTONS
+# =========================================================
+
 start_button = Button(
     parent=menu,
     text="START GAME",
     y=-0.29,
-    scale=(0.35, 0.09),
+    scale=(
+        0.35,
+        0.09
+    ),
     color=color.azure
 )
 
@@ -578,17 +811,182 @@ start_button = Button(
 leaderboard_button = Button(
     parent=menu,
     text="LEADERBOARD",
-    y=-0.40,
-    scale=(0.35, 0.07)
+    y=-0.38,
+    scale=(
+        0.35,
+        0.07
+    )
+)
+
+
+settings_button = Button(
+    parent=menu,
+    text="SETTINGS",
+    y=-0.47,
+    scale=(
+        0.35,
+        0.07
+    )
 )
 
 
 exit_button = Button(
     parent=menu,
     text="EXIT",
-    y=-0.49,
-    scale=(0.35, 0.07)
+    y=-0.56,
+    scale=(
+        0.35,
+        0.07
+    )
 )
+
+
+# =========================================================
+# SETTINGS UI
+# =========================================================
+
+settings_panel = Entity(
+    parent=camera.ui,
+    enabled=False
+)
+
+
+settings_background = Panel(
+    parent=settings_panel,
+    scale=(
+        0.75,
+        0.70
+    ),
+    color=color.rgba(
+        5,
+        8,
+        15,
+        245
+    )
+)
+
+
+settings_title = Text(
+    parent=settings_panel,
+    text="SETTINGS",
+    y=0.27,
+    origin=(
+        0,
+        0
+    ),
+    scale=2
+)
+
+
+sensitivity_label = Text(
+    parent=settings_panel,
+    text="MOUSE SENSITIVITY",
+    y=0.08,
+    origin=(
+        0,
+        0
+    ),
+    scale=1.2
+)
+
+
+sensitivity_value = Text(
+    parent=settings_panel,
+    text=f"{MOUSE_SENSITIVITY}",
+    y=-0.02,
+    origin=(
+        0,
+        0
+    ),
+    scale=1.4
+)
+
+
+sensitivity_minus = Button(
+    parent=settings_panel,
+    text="-",
+    x=-0.20,
+    y=-0.02,
+    scale=(
+        0.12,
+        0.08
+    )
+)
+
+
+sensitivity_plus = Button(
+    parent=settings_panel,
+    text="+",
+    x=0.20,
+    y=-0.02,
+    scale=(
+        0.12,
+        0.08
+    )
+)
+
+
+settings_back_button = Button(
+    parent=settings_panel,
+    text="BACK",
+    y=-0.25,
+    scale=(
+        0.30,
+        0.08
+    )
+)
+
+
+# =========================================================
+# SETTINGS FUNCTIONS
+# =========================================================
+
+def update_sensitivity():
+
+    global MOUSE_SENSITIVITY
+
+    player.mouse_sensitivity = Vec2(
+        MOUSE_SENSITIVITY,
+        MOUSE_SENSITIVITY
+    )
+
+    sensitivity_value.text = str(
+        MOUSE_SENSITIVITY
+    )
+
+
+def increase_sensitivity():
+
+    global MOUSE_SENSITIVITY
+
+    if MOUSE_SENSITIVITY < MAX_SENSITIVITY:
+
+        MOUSE_SENSITIVITY += SENSITIVITY_STEP
+
+        update_sensitivity()
+
+
+def decrease_sensitivity():
+
+    global MOUSE_SENSITIVITY
+
+    if MOUSE_SENSITIVITY > MIN_SENSITIVITY:
+
+        MOUSE_SENSITIVITY -= SENSITIVITY_STEP
+
+        update_sensitivity()
+
+
+def show_settings():
+
+    menu.enabled = False
+    settings_panel.enabled = True
+
+
+def hide_settings():
+
+    settings_panel.enabled = False
+    menu.enabled = True
 
 
 # =========================================================
@@ -603,8 +1001,16 @@ leaderboard_panel = Entity(
 
 leaderboard_bg = Panel(
     parent=leaderboard_panel,
-    scale=(0.75, 0.85),
-    color=color.rgba(5, 8, 15, 245)
+    scale=(
+        0.75,
+        0.85
+    ),
+    color=color.rgba(
+        5,
+        8,
+        15,
+        245
+    )
 )
 
 
@@ -612,7 +1018,10 @@ leaderboard_title = Text(
     parent=leaderboard_panel,
     text="LEADERBOARD",
     y=0.35,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=2
 )
 
@@ -621,7 +1030,10 @@ leaderboard_text = Text(
     parent=leaderboard_panel,
     text="",
     y=0.20,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=1.1
 )
 
@@ -630,7 +1042,10 @@ back_button = Button(
     parent=leaderboard_panel,
     text="BACK",
     y=-0.38,
-    scale=(0.3, 0.08)
+    scale=(
+        0.3,
+        0.08
+    )
 )
 
 
@@ -646,8 +1061,16 @@ result_panel = Entity(
 
 result_bg = Panel(
     parent=result_panel,
-    scale=(0.72, 0.78),
-    color=color.rgba(5, 8, 15, 245)
+    scale=(
+        0.72,
+        0.78
+    ),
+    color=color.rgba(
+        5,
+        8,
+        15,
+        245
+    )
 )
 
 
@@ -655,7 +1078,10 @@ result_title = Text(
     parent=result_panel,
     text="GAME OVER",
     y=0.28,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=2
 )
 
@@ -664,7 +1090,10 @@ result_text = Text(
     parent=result_panel,
     text="",
     y=0.05,
-    origin=(0, 0),
+    origin=(
+        0,
+        0
+    ),
     scale=1.15
 )
 
@@ -673,7 +1102,10 @@ replay_button = Button(
     parent=result_panel,
     text="PLAY AGAIN",
     y=-0.25,
-    scale=(0.32, 0.08),
+    scale=(
+        0.32,
+        0.08
+    ),
     color=color.azure
 )
 
@@ -682,7 +1114,10 @@ result_menu_button = Button(
     parent=result_panel,
     text="MAIN MENU",
     y=-0.36,
-    scale=(0.32, 0.08)
+    scale=(
+        0.32,
+        0.08
+    )
 )
 
 
@@ -727,7 +1162,10 @@ def update_effects(dt):
         if effect["life"] <= 0:
 
             destroy(entity)
-            effects.remove(effect)
+
+            effects.remove(
+                effect
+            )
 
 
 # =========================================================
@@ -738,18 +1176,37 @@ class AimTarget(Entity):
 
     def __init__(self):
 
-        difficulty = DIFFICULTIES[selected_difficulty]
+        difficulty = DIFFICULTIES[
+            selected_difficulty
+        ]
 
-        size = difficulty["target_size"]
+        size = difficulty[
+            "target_size"
+        ]
 
-        x = random.uniform(-25, 25)
-        y = random.uniform(2.5, 11)
-        z = random.uniform(-5, 32)
+        x = random.uniform(
+            -25,
+            25
+        )
+
+        y = random.uniform(
+            2.5,
+            11
+        )
+
+        z = random.uniform(
+            -5,
+            32
+        )
 
         super().__init__(
             parent=world,
             model="sphere",
-            position=(x, y, z),
+            position=(
+                x,
+                y,
+                z
+            ),
             scale=size,
             color=color.red,
             collider="sphere"
@@ -759,7 +1216,9 @@ class AimTarget(Entity):
 
         self.moving = (
             random.random()
-            < difficulty["moving_chance"]
+            < difficulty[
+                "moving_chance"
+            ]
         )
 
         self.direction = random.choice([
@@ -767,9 +1226,12 @@ class AimTarget(Entity):
             1
         ])
 
-        self.move_speed = difficulty["speed"] * random.uniform(
-            1.0,
-            2.0
+        self.move_speed = (
+            difficulty["speed"]
+            * random.uniform(
+                1.0,
+                2.0
+            )
         )
 
         # Outer ring without torus
@@ -787,8 +1249,9 @@ class AimTarget(Entity):
 
         self.ring.z = 0.02
 
-        # Hide ring's collider
+        # Hide ring collider
         self.ring.collider = None
+
 
     def update_target(self, dt):
 
@@ -802,9 +1265,11 @@ class AimTarget(Entity):
         )
 
         if self.x > 28:
+
             self.direction = -1
 
         if self.x < -28:
+
             self.direction = 1
 
 
@@ -816,7 +1281,9 @@ def spawn_target():
 
     target = AimTarget()
 
-    targets.append(target)
+    targets.append(
+        target
+    )
 
     global last_target_time
 
@@ -831,7 +1298,9 @@ def clear_targets():
 
     for target in targets[:]:
 
-        destroy(target)
+        destroy(
+            target
+        )
 
     targets.clear()
 
@@ -840,15 +1309,22 @@ def clear_targets():
 # SCORE
 # =========================================================
 
-def calculate_score(reaction_time):
+def calculate_score(
+    reaction_time
+):
 
-    difficulty = DIFFICULTIES[selected_difficulty]
+    difficulty = DIFFICULTIES[
+        selected_difficulty
+    ]
 
     base_score = 100
 
     reaction_bonus = max(
         0,
-        int(300 - reaction_time * 100)
+        int(
+            300
+            - reaction_time * 100
+        )
     )
 
     combo_bonus = combo * 10
@@ -859,7 +1335,9 @@ def calculate_score(reaction_time):
         + combo_bonus
     )
 
-    total *= difficulty["multiplier"]
+    total *= difficulty[
+        "multiplier"
+    ]
 
     return int(total)
 
@@ -879,7 +1357,9 @@ def shoot():
     if not game_running:
         return
 
-    play_sound(shoot_sound)
+    play_sound(
+        shoot_sound
+    )
 
     hit_entity = mouse.hovered_entity
 
@@ -887,7 +1367,11 @@ def shoot():
 
     if hit_entity:
 
-        if isinstance(hit_entity, AimTarget):
+        if isinstance(
+            hit_entity,
+            AimTarget
+        ):
+
             target = hit_entity
 
         elif hit_entity.parent:
@@ -896,11 +1380,17 @@ def shoot():
                 hit_entity.parent,
                 AimTarget
             ):
-                target = hit_entity.parent
+
+                target = (
+                    hit_entity.parent
+                )
 
     if target and target in targets:
 
-        reaction_time = time.time() - target.spawn_time
+        reaction_time = (
+            time.time()
+            - target.spawn_time
+        )
 
         points = calculate_score(
             reaction_time
@@ -917,27 +1407,37 @@ def shoot():
             combo
         )
 
-        play_sound(hit_sound)
+        play_sound(
+            hit_sound
+        )
 
         if combo >= 3:
-            play_sound(combo_sound)
+
+            play_sound(
+                combo_sound
+            )
 
         create_hit_effect(
             target.position
         )
 
-        destroy(target)
+        destroy(
+            target
+        )
 
-        targets.remove(target)
-
-        spawn_timer = 0
+        targets.remove(
+            target
+        )
 
     else:
 
         misses += 1
+
         combo = 0
 
-        play_sound(miss_sound)
+        play_sound(
+            miss_sound
+        )
 
 
 # =========================================================
@@ -970,7 +1470,9 @@ def start_game():
     combo = 0
     best_combo = 0
 
-    time_left = DIFFICULTIES[selected_difficulty]["time"]
+    time_left = DIFFICULTIES[
+        selected_difficulty
+    ]["time"]
 
     spawn_timer = 0
 
@@ -981,6 +1483,7 @@ def start_game():
 
     menu.enabled = False
     leaderboard_panel.enabled = False
+    settings_panel.enabled = False
     result_panel.enabled = False
 
     hud.enabled = True
@@ -1014,7 +1517,9 @@ def end_game():
 
     clear_targets()
 
-    play_sound(gameover_sound)
+    play_sound(
+        gameover_sound
+    )
 
     add_score()
 
@@ -1088,7 +1593,9 @@ def show_leaderboard():
                 f"{accuracy}%"
             )
 
-    leaderboard_text.text = "\n".join(lines)
+    leaderboard_text.text = (
+        "\n".join(lines)
+    )
 
 
 def hide_leaderboard():
@@ -1113,6 +1620,7 @@ def main_menu():
 
     result_panel.enabled = False
     leaderboard_panel.enabled = False
+    settings_panel.enabled = False
     hud.enabled = False
 
     menu.enabled = True
@@ -1134,42 +1642,49 @@ def input(key):
     if key == "left mouse down":
 
         if game_running:
+
             shoot()
+
 
     if key == "escape":
 
         if game_running:
 
             game_running = False
+
             mouse.locked = False
 
             hud.enabled = False
+
             player.enabled = False
 
             menu.enabled = True
 
             clear_targets()
 
+
     if key == "f11":
 
-        window.fullscreen = not window.fullscreen
+        window.fullscreen = (
+            not window.fullscreen
+        )
+
         return
 
-    # Difficulty
-    for i, button in enumerate(difficulty_buttons):
-
-        if key == "left mouse down" and mouse.hovered_entity == button:
-
-            selected_difficulty = difficulty_names[i]
-
-            update_difficulty_buttons()
 
     # Difficulty
-    for i, button in enumerate(difficulty_buttons):
+    for i, button in enumerate(
+        difficulty_buttons
+    ):
 
-        if key == "left mouse down" and mouse.hovered_entity == button:
+        if (
+            key == "left mouse down"
+            and mouse.hovered_entity == button
+        ):
 
-            selected_difficulty = difficulty_names[i]
+            selected_difficulty = (
+                difficulty_names[i]
+            )
 
             update_difficulty_buttons()
 
@@ -1180,15 +1695,41 @@ def input(key):
 
 start_button.on_click = start_game
 
-leaderboard_button.on_click = show_leaderboard
+leaderboard_button.on_click = (
+    show_leaderboard
+)
 
-back_button.on_click = hide_leaderboard
+settings_button.on_click = (
+    show_settings
+)
 
-replay_button.on_click = start_game
+back_button.on_click = (
+    hide_leaderboard
+)
 
-result_menu_button.on_click = main_menu
+settings_back_button.on_click = (
+    hide_settings
+)
 
-exit_button.on_click = application.quit
+sensitivity_plus.on_click = (
+    increase_sensitivity
+)
+
+sensitivity_minus.on_click = (
+    decrease_sensitivity
+)
+
+replay_button.on_click = (
+    start_game
+)
+
+result_menu_button.on_click = (
+    main_menu
+)
+
+exit_button.on_click = (
+    application.quit
+)
 
 
 # =========================================================
@@ -1202,10 +1743,13 @@ def update():
 
     dt = time.dt
 
-    update_effects(dt)
+    update_effects(
+        dt
+    )
 
     if not game_running:
         return
+
 
     # Timer
     time_left -= dt
@@ -1213,15 +1757,22 @@ def update():
     if time_left <= 0:
 
         time_left = 0
+
         end_game()
+
         return
 
+
     # Spawn
-    difficulty = DIFFICULTIES[selected_difficulty]
+    difficulty = DIFFICULTIES[
+        selected_difficulty
+    ]
 
     spawn_timer += dt
 
-    if spawn_timer >= difficulty["spawn_delay"]:
+    if spawn_timer >= difficulty[
+        "spawn_delay"
+    ]:
 
         spawn_timer = 0
 
@@ -1229,15 +1780,21 @@ def update():
 
             spawn_target()
 
+
     # Move targets
     for target in targets[:]:
 
         if target in targets:
 
-            target.update_target(dt)
+            target.update_target(
+                dt
+            )
+
 
     # HUD
-    score_text.text = f"SCORE: {score}"
+    score_text.text = (
+        f"SCORE: {score}"
+    )
 
     time_text.text = (
         f"TIME: {max(0, int(time_left))}"
@@ -1263,6 +1820,7 @@ crosshair.enabled = False
 player.enabled = False
 
 menu.enabled = True
+settings_panel.enabled = False
 
 mouse.locked = False
 
@@ -1272,3 +1830,4 @@ mouse.locked = False
 # =========================================================
 
 app.run()
+
